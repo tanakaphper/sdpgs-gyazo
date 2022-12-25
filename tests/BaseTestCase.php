@@ -19,6 +19,7 @@ class BaseTestCase extends TestCase
             names: ['.env', '.env.example']
         );
         $dotEnv->safeLoad();
+        var_dump($_ENV);
 
         $this->gyazoClient = GyazoClient::getInstance($_ENV['GYAZO_ACCESS_TOKEN']);
     }
