@@ -8,10 +8,12 @@
             "Sdpgs\\Gyazo\\": "src/"
         }
     },
+    "homepage": "https://sunday-programmers.com",
     "authors": [
         {
             "name": "tanakaphper",
-            "email": "tanakaphper@gmail.com"
+            "email": "tanakaphper@gmail.com",
+            "homepage": "https://twitter.com/sunDprogrammers"
         }
     ],
     "require": {
