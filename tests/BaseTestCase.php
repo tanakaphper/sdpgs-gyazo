@@ -23,7 +23,6 @@ class BaseTestCase extends TestCase
     public function testGetList(): void
     {
         $images = $this->gyazoClient->getList();
-        var_dump(count($images) . '枚の画像');
-        $this->assertTrue(is_array($images));
+        $this->assertTrue(is_array($images), count($images) . '枚の画像');
     }
 }
