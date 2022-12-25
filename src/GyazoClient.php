@@ -6,6 +6,9 @@ namespace Sdpgs\Gyazo;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Sdpgs\Gyazo\Enums\AccessPolicyEnum;
+use Sdpgs\Gyazo\Enums\GyazoEndpointUriEnum;
+use Sdpgs\Gyazo\Enums\MetadataIsPublicEnum;
 
 class GyazoClient
 {
@@ -32,7 +35,7 @@ class GyazoClient
     }
 
     /**
-     * Fetch User's image list
+     * Fetch user's image list
      *
      * @see https://gyazo.com/api/docs/image
      * @return array<int, array{
@@ -115,5 +118,85 @@ class GyazoClient
         }
 
         return $return;
+    }
+
+    /**
+     * Upload image to Gyazo,then return metadata
+     *
+     * @see https://gyazo.com/api/docs/image
+     * @param string $imageData
+     * @param array{
+     *     access_policy?: value-of<AccessPolicyEnum>,
+     *     metadata_is_public?: value-of<MetadataIsPublicEnum>,
+     *     referer_url?: string,
+     *     app?: string,
+     *     title?: string,
+     *     desc?: string,
+     *     created_at?: string,
+     *     collection_id?: string
+     * } $options
+     * @return array{
+     *     image_id: string,
+     *     permalink_url: string,
+     *     thumb_url: string,
+     *     url: string,
+     *     type: string,
+     *     created_at?: string,
+     *     url?: string,
+     *     access_policy?: mixed|null
+     * }
+     * @throws GyazoException
+     */
+    public function uploadImage(string $imageData, $options = []): array
+    {
+        try {
+            $response = self::$client->request(
+                'POST',
+                GyazoEndpointUriEnum::UPLOAD->value,
+                [
+                    'headers' => [
+                        'Authorization' => "Bearer {$this->accessToken}"
+                    ],
+                    'multipart' => [
+                        [
+                            'name' => 'imagedata',
+                            'contents' => $imageData,
+                            'filename' => 'aaa.png'
+                        ],
+                        ...array_map(
+                            function ($key, $item) {
+                                return [
+                                    'name' => $key,
+                                    'contents' => $item,
+                                ];
+                            },
+                            array_keys($options),
+                            array_values($options),
+                        )
+                    ]
+                ])
+                ->getBody()
+                ->getContents();
+        } catch (GuzzleException $guzzleException) {
+            throw new GyazoException(
+                message: $guzzleException->getMessage(),
+                code: $guzzleException->getCode(),
+                previous: $guzzleException
+            );
+        }
+
+        $decodedResponse = json_decode($response, true);
+        if (!is_array($decodedResponse)) {
+            throw new GyazoException();
+        }
+        return [
+            'image_id' => strval($decodedResponse['image_id'] ?? null),
+            'permalink_url' => strval($decodedResponse['permalink_url'] ?? null),
+            'url' => strval($decodedResponse['url'] ?? null),
+            'access_policy' => $decodedResponse['access_policy'] ?? null,
+            'type' => $decodedResponse['type'] ?? null,
+            'thumb_url' => strval($decodedResponse['thumb_url'] ?? null),
+            'created_at' => strval($decodedResponse['created_at'] ?? null),
+        ];
     }
 }
