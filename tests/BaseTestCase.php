@@ -19,13 +19,13 @@ class BaseTestCase extends TestCase
             names: ['.env', '.env.example']
         );
         $dotEnv->safeLoad();
-        var_dump(getenv());
+        var_dump(getenv('GYAZO_ACCESS_TOKEN'));
 
         $this->gyazoClient = GyazoClient::getInstance($_ENV['GYAZO_ACCESS_TOKEN']);
     }
 
     public function testGetList(): void
-    {var_dump($_ENV['GYAZO_ACCESS_TOKEN']);exit;
+    {var_dump(strlen(getenv('GYAZO_ACCESS_TOKEN')).'の文字数');exit;
         $images = $this->gyazoClient->getList();
         $this->assertTrue(is_array($images), count($images) . '枚の画像');
     }
