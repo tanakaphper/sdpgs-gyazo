@@ -14,16 +14,12 @@ class BaseTestCase extends TestCase
     {
         parent::setUp();
 
-        $dotEnv = Dotenv::createUnsafeImmutable(__DIR__);
+        $dotEnv = Dotenv::createUnsafeImmutable(
+            paths: __DIR__,
+            names: ['.env', '.env.example']
+        );
         $dotEnv->safeLoad();
 
-        $this->gyazoClient = GyazoClient::getInstance($_ENV['GYAZO_ACCESS_TOKEN']);
-    }
-
-    public function testGetList(): void
-    {
-        $images = $this->gyazoClient->getList();
-        var_dump(count($images) . '枚の画像');
-        $this->assertTrue(is_array($images));
+        $this->gyazoClient = GyazoClient::getInstance(getenv('GYAZO_ACCESS_TOKEN'));
     }
 }
