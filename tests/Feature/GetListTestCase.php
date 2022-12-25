@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+namespace Feature;
+
 use Dotenv\Dotenv;
 use PHPUnit\Framework\TestCase;
 use Sdpgs\Gyazo\GyazoClient;
 
-class BaseTestCase extends TestCase
+class GetListTestCase extends TestCase
 {
     private readonly GyazoClient $gyazoClient;
 
@@ -19,7 +21,10 @@ class BaseTestCase extends TestCase
             names: ['.env', '.env.example']
         );
         $dotEnv->safeLoad();
+    }
 
-        $this->gyazoClient = GyazoClient::getInstance(getenv('GYAZO_ACCESS_TOKEN'));
+    public function testBasic(): void
+    {
+        $this->assertTrue(true);
     }
 }
