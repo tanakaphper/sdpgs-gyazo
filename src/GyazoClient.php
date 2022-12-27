@@ -248,4 +248,61 @@ class GyazoClient
             'type' => strval($responseDecoded['type'] ?? null)
         ];
     }
+
+    /**
+     * @param string $url
+     * @return array{
+     *     version: string,
+     *     type: string,
+     *     provider_name: string,
+     *     provider_url: string,
+     *     url: string,
+     *     width: int,
+     *     height: int,
+     *     scale?: float
+     * }
+     * @throws GyazoException
+     */
+    public function getOEmbed(string $url): array
+    {
+        try {
+            $response = self::$client->request(
+                'GET',
+                GyazoEndpointUriEnum::O_EMBED->value . '?url=' . $url,
+                [
+                    'headers' => [
+                        'Authorization' => "Bearer {$this->accessToken}"
+                    ]
+                ]
+            )
+                ->getBody()
+                ->getContents();
+        } catch (GuzzleException $guzzleException) {
+            throw new GyazoException(
+                message: $guzzleException->getMessage(),
+                code: $guzzleException->getCode(),
+                previous: $guzzleException
+            );
+        }
+
+        $responseDecoded = json_decode($response, true);
+        if (!is_array($responseDecoded)) {
+            throw new GyazoException();
+        }
+
+        $return = [
+            'version' => strval($responseDecoded['version'] ?? null),
+            'type' => strval($responseDecoded['type'] ?? null),
+            'provider_name' => strval($responseDecoded['provider_name'] ?? null),
+            'provider_url' => strval($responseDecoded['provider_url'] ?? null),
+            'url' => strval($responseDecoded['url'] ?? null),
+            'width' => intval($responseDecoded['width'] ?? null),
+            'height' => intval($responseDecoded['version'] ?? null),
+        ];
+        if ($scale = $responseDecoded['scale'] ?? null) {
+            $return['scale'] = floatval($scale);
+        }
+
+        return $return;
+    }
 }
