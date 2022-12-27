@@ -204,4 +204,48 @@ class GyazoClient
             'created_at' => strval($decodedResponse['created_at'] ?? null),
         ];
     }
+
+    /**
+     * Delete uploaded image
+     *
+     * @see https://gyazo.com/api/docs/image
+     * @param string $imageId
+     * @return array{
+     *     image_id: string,
+     *     type: string
+     * }
+     * @throws GyazoException
+     */
+    public function deleteImage(string $imageId): array
+    {
+        try {
+            $response = self::$client->request(
+                'DELETE',
+                GyazoEndpointUriEnum::DELETE->value . $imageId,
+                [
+                    'headers' => [
+                        'Authorization' => "Bearer {$this->accessToken}"
+                    ]
+                ]
+            )
+                ->getBody()
+                ->getContents();
+        } catch (GuzzleException $guzzleException) {
+            throw new GyazoException(
+                message: $guzzleException->getMessage(),
+                code: $guzzleException->getCode(),
+                previous: $guzzleException
+            );
+        }
+
+        $responseDecoded = json_decode($response, true);
+        if (!is_array($responseDecoded)) {
+            throw new GyazoException();
+        }
+
+        return [
+            'image_id' => strval($responseDecoded['image_id'] ?? null),
+            'type' => strval($responseDecoded['type'] ?? null)
+        ];
+    }
 }
