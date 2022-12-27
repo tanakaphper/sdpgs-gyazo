@@ -125,6 +125,7 @@ class GyazoClient
      *
      * @see https://gyazo.com/api/docs/image
      * @param string $imageData
+     * @param string $fileName
      * @param array{
      *     access_policy?: value-of<AccessPolicyEnum>,
      *     metadata_is_public?: value-of<MetadataIsPublicEnum>,
@@ -141,14 +142,17 @@ class GyazoClient
      *     thumb_url: string,
      *     url: string,
      *     type: string,
+     *     url: string,
      *     created_at?: string,
-     *     url?: string,
      *     access_policy?: mixed|null
      * }
      * @throws GyazoException
      */
-    public function uploadImage(string $imageData, $options = []): array
-    {
+    public function uploadImage(
+        string $imageData,
+        string $fileName,
+        array $options = []
+    ): array {
         try {
             $response = self::$client->request(
                 'POST',
@@ -161,7 +165,7 @@ class GyazoClient
                         [
                             'name' => 'imagedata',
                             'contents' => $imageData,
-                            'filename' => 'aaa.png'
+                            'filename' => $fileName
                         ],
                         ...array_map(
                             function ($key, $item) {
@@ -189,14 +193,59 @@ class GyazoClient
         if (!is_array($decodedResponse)) {
             throw new GyazoException();
         }
+
         return [
             'image_id' => strval($decodedResponse['image_id'] ?? null),
             'permalink_url' => strval($decodedResponse['permalink_url'] ?? null),
-            'url' => strval($decodedResponse['url'] ?? null),
-            'access_policy' => $decodedResponse['access_policy'] ?? null,
-            'type' => $decodedResponse['type'] ?? null,
             'thumb_url' => strval($decodedResponse['thumb_url'] ?? null),
+            'url' => strval($decodedResponse['url'] ?? null),
+            'type' => $decodedResponse['type'] ?? null,
+            'access_policy' => $decodedResponse['access_policy'] ?? null,
             'created_at' => strval($decodedResponse['created_at'] ?? null),
+        ];
+    }
+
+    /**
+     * Delete uploaded image
+     *
+     * @see https://gyazo.com/api/docs/image
+     * @param string $imageId
+     * @return array{
+     *     image_id: string,
+     *     type: string
+     * }
+     * @throws GyazoException
+     */
+    public function deleteImage(string $imageId): array
+    {
+        try {
+            $response = self::$client->request(
+                'DELETE',
+                GyazoEndpointUriEnum::DELETE->value . $imageId,
+                [
+                    'headers' => [
+                        'Authorization' => "Bearer {$this->accessToken}"
+                    ]
+                ]
+            )
+                ->getBody()
+                ->getContents();
+        } catch (GuzzleException $guzzleException) {
+            throw new GyazoException(
+                message: $guzzleException->getMessage(),
+                code: $guzzleException->getCode(),
+                previous: $guzzleException
+            );
+        }
+
+        $responseDecoded = json_decode($response, true);
+        if (!is_array($responseDecoded)) {
+            throw new GyazoException();
+        }
+
+        return [
+            'image_id' => strval($responseDecoded['image_id'] ?? null),
+            'type' => strval($responseDecoded['type'] ?? null)
         ];
     }
 }
