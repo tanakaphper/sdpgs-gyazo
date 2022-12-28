@@ -14,6 +14,21 @@ If you want to know more detailed information, please go to following official d
 
 Documentation for Gyazo API can be found on [Gyazo API](https://gyazo.com/api)
 
+## Install
+
+```bash
+composer require sdpgs/gyazo
+```
+
+## Usage
+
+```php
+$gyazoClient = GyazoClient::getInstance('{your Gyazo access token}');
+/** @var string $imageBinary **/
+$imageBinary = '*****';
+$response = $gyazoClient->uploadImage($imageBinary, 'hoge.png');
+```
+
 ## Contributing
 
 Thank you for considering to sdpgs-gyazo! But, The contribution guide doesn't get ready yet.
