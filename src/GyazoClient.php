@@ -205,7 +205,7 @@ class GyazoClient
             $return['access_policy'] = $accessPolicy;
         }
 
-        if ($ocr = $responseDecoded['ocr']) {
+        if ($ocr = $responseDecoded['ocr'] ?? null) {
             if (is_array($ocr)) {
                 $return['ocr']['locale'] = empty($ocr['locale'])
                     ? null
