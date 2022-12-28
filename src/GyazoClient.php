@@ -121,6 +121,105 @@ class GyazoClient
     }
 
     /**
+     * @param string $imageId
+     * @return array{
+     *     image_id: string,
+     *     type: string,
+     *     created_at: string,
+     *     permalink_url: string|null,
+     *     thumb_url: string|null,
+     *     metadata: array{
+     *         app: mixed|null,
+     *         title: mixed|null,
+     *         url: mixed|null,
+     *         desc: mixed|null,
+     *         original_title?: mixed|null,
+     *         original_url?: mixed|null
+     *     },
+     *     url?: string,
+     *     access_policy?: mixed|null,
+     *     ocr?: array{
+     *         locale: string|null,
+     *         description: string|null
+     *     }
+     * }
+     * @throws GyazoException
+     */
+    public function getImage(string $imageId): array
+    {
+        try {
+            $res = self::$client->request(
+                method: 'GET',
+                uri: GyazoEndpointUriEnum::IMAGE->value . $imageId,
+                options: [
+                    'headers' => [
+                        'Authorization' => "Bearer {$this->accessToken}"
+                    ]
+                ]
+            )
+                ->getBody()
+                ->getContents();
+        } catch (GuzzleException $guzzleException) {
+            throw new GyazoException(
+                message: $guzzleException->getMessage(),
+                code: $guzzleException->getCode(),
+                previous: $guzzleException
+            );
+        }
+
+        $responseDecoded = json_decode($res, true);
+        if (!is_array($responseDecoded)) {
+            throw new GyazoException();
+        }
+
+
+        $return = [
+            'image_id' => strval($responseDecoded['image_id'] ?? null),
+            'type' => strval($responseDecoded['type'] ?? null),
+            'created_at' => strval($responseDecoded['created_at'] ?? null),
+            'permalink_url' => empty($responseDecoded['permalink_url'])
+                ? null
+                : strval($responseDecoded['permalink_url']),
+            'thumb_url' => empty($responseDecoded['thumb_url'])
+                ? null
+                : strval($responseDecoded['thumb_url']),
+        ];
+        $return['metadata'] = [
+            'app' => $responseDecoded['metadata']['app'] ?? null,
+            'title' => $responseDecoded['metadata']['title'] ?? null,
+            'url' => $responseDecoded['metadata']['url'] ?? null,
+            'desc' => $responseDecoded['metadata']['desc'] ?? null,
+        ];
+        if ($originalTitle = $responseDecoded['metadata']['original_title']) {
+            $return['metadata']['original_title'] = $originalTitle;
+        }
+        if ($originalUrl = $responseDecoded['metadata']['original_url']) {
+            $return['metadata']['original_url'] = $originalUrl;
+        }
+
+        if ($url = $responseDecoded['url']) {
+            $return['url'] = strval($url);
+        }
+
+        if ($accessPolicy = $responseDecoded['access_policy']) {
+            $return['access_policy'] = $accessPolicy;
+        }
+
+        if ($ocr = $responseDecoded['ocr']) {
+            if (is_array($ocr)) {
+                $return['ocr']['locale'] = empty($ocr['locale'])
+                    ? null
+                    : strval($ocr['locale']);
+                $return['ocr']['description'] = empty($ocr['description'])
+                    ? null
+                    : strval($ocr['description']);
+            }
+        }
+
+        return $return;
+    }
+
+    /**
      * Upload image to Gyazo,then return metadata
      *
      * @see https://gyazo.com/api/docs/image
@@ -221,7 +320,7 @@ class GyazoClient
         try {
             $response = self::$client->request(
                 'DELETE',
-                GyazoEndpointUriEnum::DELETE->value . $imageId,
+                GyazoEndpointUriEnum::IMAGE->value . $imageId,
                 [
                     'headers' => [
                         'Authorization' => "Bearer {$this->accessToken}"
