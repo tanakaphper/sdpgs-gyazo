@@ -12,17 +12,6 @@ use Sdpgs\Gyazo\GyazoException;
 
 class CommonTestCase extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $dotEnv = Dotenv::createUnsafeImmutable(
-            paths: __DIR__,
-            names: ['.env', '.env.example']
-        );
-        $dotEnv->safeLoad();
-    }
-
     /**
      * @return string
      * @throws Exception
