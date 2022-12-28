@@ -16,7 +16,7 @@ Documentation for Gyazo API can be found on [Gyazo API](https://gyazo.com/api)
 
 ## Contributing
 
-Thank you for considering to sdpgs-gyazo! But, The contribution guide doesn't got ready yet.
+Thank you for considering to sdpgs-gyazo! But, The contribution guide doesn't get ready yet.
 If you would, please wait just a moment.
 
 ## License
