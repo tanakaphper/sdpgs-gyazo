@@ -5,7 +5,7 @@
 ## Introduction
 
 sdpgs-gyazo is a simple gyazo api client on PHP.
-You can upload,get and delete image to Gyazo without any complex http rule.
+You can upload,get and delete image to Gyazo without any complex optional http parameters.
 Only you need to do is to register your application and then generate your access token in Gyazo.
 Gyazo access token is only required sdpg-gyazo parameter.
 If you want to know more detailed information, please go to following official document page.
@@ -27,6 +27,25 @@ $gyazoClient = GyazoClient::getInstance('{your Gyazo access token}');
 /** @var string $imageBinary **/
 $imageBinary = '*****';
 $response = $gyazoClient->uploadImage($imageBinary, 'hoge.png');
+```
+
+## How to test
+
+Move directory to tests/Feature and generate copy .env.example to .env.
+```bash
+cp .env.example .env
+```
+
+And then add GYAZO_ACCESS_TOKEN, as above-mentioned.
+
+```bash
+GYAZO_ACCESS_TOKEN={your Gyazo access token}
+```
+
+And run following composer script.
+
+```bash
+composer test
 ```
 
 ## Contributing
