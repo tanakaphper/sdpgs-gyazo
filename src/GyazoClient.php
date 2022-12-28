@@ -40,20 +40,20 @@ class GyazoClient
      * @see https://gyazo.com/api/docs/image
      * @return array<int, array{
      *     image_id: string,
-     *     permalink_url: string|null,
-     *     url: string,
-     *     access_policy: string|null,
-     *     metadata: array{
-     *         app: mixed|null,
-     *         title: mixed|null,
-     *         url: mixed|null,
-     *         desc: mixed|null,
+     *     permalink_url?: string|null,
+     *     url?: string|null,
+     *     access_policy?: string|null,
+     *     metadata?: array{
+     *         app?: mixed|null,
+     *         title?: mixed|null,
+     *         url?: mixed|null,
+     *         desc?: mixed|null,
      *         original_title?: mixed|null,
      *         original_url?: mixed|null
      *     },
-     *     type: string|null,
-     *     thumb_url: string|null,
-     *     created_at: string|null
+     *     type?: string|null,
+     *     thumb_url?: string|null,
+     *     created_at?: string|null
      * }>
      * @throws GyazoException
      */
@@ -93,28 +93,55 @@ class GyazoClient
                 throw new GyazoException();
             }
 
-            $metaData = $value['metadata'];
-            if (!is_array($metaData)) {
-                throw new GyazoException();
+            $return[$key] = $value;
+
+            $imageId = strval($value['image_id'] ?? null);
+            if (empty($imageId)) {
+                throw new GyazoException('image_id is empty');
+            }
+            $return[$key]['image_id'] = $imageId;
+
+            if (array_key_exists('permalink_urk', $value)) {
+                $return[$key]['permalink_url'] = $value['permalink_url']
+                    ? strval($value['permalink_url'])
+                    : null;
             }
 
-            $return[$key] = [
-                'image_id' => strval($value['image_id'] ?? null),
-                'permalink_url' => empty($value['permalink_url']) ? null : strval($value['permalink_url']),
-                'url' => strval($value['url'] ?? null),
-                'access_policy' => empty($value['access_policy']) ? null : strval($value['access_policy']),
-                'metadata' => [
-                    'app' => $metaData['app'] ?? null,
-                    'title' => $metaData['title'] ?? null,
-                    'url' => $metaData['url'] ?? null,
-                    'desc' => $metaData['desc'] ?? null,
-                    'original_title' => $metaData['original_title'] ?? null,
-                    'original_url' => $metaData['original_url'] ?? null,
-                ],
-                'type' => $value['type'] ?? null,
-                'thumb_url' => empty($value['thumb_url']) ? null : strval($value['thumb_url']),
-                'created_at' => strval($value['created_at'] ?? null),
-            ];
+            if (array_key_exists('url', $value)) {
+                $return[$key]['url'] = $value['url'] ?? null
+                    ? strval($value['url'])
+                    : null;
+            }
+
+            if (array_key_exists('access_policy', $value)) {
+                $return[$key]['access_policy'] = is_null($value['access_policy'] ?? null)
+                    ? strval($value['access_policy'])
+                    : null;
+            }
+
+            if (array_key_exists('metadata', $value)) {
+                if (is_array($value['metadata'])) {
+                    $return[$key]['metadata'] = $value['metadata'];
+                }
+            }
+
+            if (array_key_exists('type', $value)) {
+                $return[$key]['type'] = $value['type']
+                    ? strval($value['type'])
+                    : null;
+            }
+
+            if (array_key_exists('thumb_url', $value)) {
+                $return[$key]['thumb_url'] = $value['thumb_url']
+                    ? strval($value['thumb_url'])
+                    : null;
+            }
+
+            if (array_key_exists('created_at', $value)) {
+                $return[$key]['created_at'] = $value['created_at']
+                    ? strval($value['created_at'])
+                    : null;
+            }
         }
 
         return $return;
