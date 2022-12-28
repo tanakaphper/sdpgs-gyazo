@@ -1,6 +1,7 @@
 # sdpgs-gyazo
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+[![tests](https://github.com/tanakaphper/sdpgs-gyazo/actions/workflows/php.yml/badge.svg)](https://github.com/tanakaphper/sdpgs-gyazo/actions/workflows/php.yml)
 
 ## Introduction
 
