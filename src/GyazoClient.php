@@ -38,6 +38,10 @@ class GyazoClient
      * Fetch user's image list
      *
      * @see https://gyazo.com/api/docs/image
+     * @param array{
+     *     page?: positive-int,
+     *     per_page?: int<1, 100>
+     * } $options
      * @return array<int, array{
      *     image_id: string,
      *     permalink_url?: string|null,
@@ -57,7 +61,7 @@ class GyazoClient
      * }>
      * @throws GyazoException
      */
-    public function getList(): array
+    public function getList(array $options = []): array
     {
         try {
             $res = self::$client->request(
@@ -66,7 +70,8 @@ class GyazoClient
                 options: [
                     'headers' => [
                         'Authorization' => "Bearer {$this->accessToken}"
-                    ]
+                    ],
+                    'query' => $options
                 ]
             )
                 ->getBody()
@@ -96,9 +101,6 @@ class GyazoClient
             $return[$key] = $value;
 
             $imageId = strval($value['image_id'] ?? null);
-            if (empty($imageId)) {
-                throw new GyazoException('image_id is empty');
-            }
             $return[$key]['image_id'] = $imageId;
 
             if (array_key_exists('permalink_urk', $value)) {
@@ -148,27 +150,30 @@ class GyazoClient
     }
 
     /**
+     * Fetch image by image id
+     *
+     * @see https://gyazo.com/api/docs/image
      * @param string $imageId
      * @return array{
      *     image_id: string,
-     *     type: string,
-     *     created_at: string,
-     *     permalink_url: string|null,
-     *     thumb_url: string|null,
-     *     metadata: array{
-     *         app: mixed|null,
-     *         title: mixed|null,
-     *         url: mixed|null,
-     *         desc: mixed|null,
+     *     type?: string|null,
+     *     created_at?: string|null,
+     *     permalink_url?: string|null,
+     *     thumb_url?: string|null,
+     *     metadata?: array{
+     *         app?: mixed|null,
+     *         title?: mixed|null,
+     *         url?: mixed|null,
+     *         desc?: mixed|null,
      *         original_title?: mixed|null,
      *         original_url?: mixed|null
-     *     },
-     *     url?: string,
+     *     }|mixed,
+     *     url?: string|null,
      *     access_policy?: mixed|null,
      *     ocr?: array{
-     *         locale: string|null,
-     *         description: string|null
-     *     }
+     *         locale?: string|null,
+     *         description?: string|null
+     *     }|mixed
      * }
      * @throws GyazoException
      */
@@ -199,48 +204,51 @@ class GyazoClient
             throw new GyazoException();
         }
 
+        $return = $responseDecoded;
 
-        $return = [
-            'image_id' => strval($responseDecoded['image_id'] ?? null),
-            'type' => strval($responseDecoded['type'] ?? null),
-            'created_at' => strval($responseDecoded['created_at'] ?? null),
-            'permalink_url' => empty($responseDecoded['permalink_url'])
-                ? null
-                : strval($responseDecoded['permalink_url']),
-            'thumb_url' => empty($responseDecoded['thumb_url'])
-                ? null
-                : strval($responseDecoded['thumb_url']),
-        ];
-        $return['metadata'] = [
-            'app' => $responseDecoded['metadata']['app'] ?? null,
-            'title' => $responseDecoded['metadata']['title'] ?? null,
-            'url' => $responseDecoded['metadata']['url'] ?? null,
-            'desc' => $responseDecoded['metadata']['desc'] ?? null,
-        ];
-        if ($originalTitle = $responseDecoded['metadata']['original_title']) {
-            $return['metadata']['original_title'] = $originalTitle;
-        }
-        if ($originalUrl = $responseDecoded['metadata']['original_url']) {
-            $return['metadata']['original_url'] = $originalUrl;
+        $imageId = strval($responseDecoded['image_id'] ?? null);
+        $return['image_id'] = $imageId;
+
+        if (array_key_exists('type', $responseDecoded)) {
+            $return['type'] = $responseDecoded['type']
+                ? strval($responseDecoded['type'])
+                : null;
         }
 
-        if ($url = $responseDecoded['url']) {
-            $return['url'] = strval($url);
+        if (array_key_exists('created_at', $responseDecoded)) {
+            $return['created_at'] = $responseDecoded['created_at']
+                ? strval($responseDecoded['created_at'])
+                : null;
         }
 
-        if ($accessPolicy = $responseDecoded['access_policy']) {
-            $return['access_policy'] = $accessPolicy;
+        if (array_key_exists('permalink_urk', $responseDecoded)) {
+            $return['permalink_url'] = $responseDecoded['permalink_url']
+                ? strval($responseDecoded['permalink_url'])
+                : null;
         }
 
-        if ($ocr = $responseDecoded['ocr'] ?? null) {
-            if (is_array($ocr)) {
-                $return['ocr']['locale'] = empty($ocr['locale'])
-                    ? null
-                    : strval($ocr['locale']);
-                $return['ocr']['description'] = empty($ocr['description'])
-                    ? null
-                    : strval($ocr['description']);
-            }
+        if (array_key_exists('thumb_url', $responseDecoded)) {
+            $return['thumb_url'] = $responseDecoded['thumb_url']
+                ? strval($responseDecoded['thumb_url'])
+                : null;
+        }
+
+        if (array_key_exists('metadata', $responseDecoded)) {
+            $return['metadata'] = $responseDecoded['metadata'];
+        }
+
+        if (array_key_exists('url', $responseDecoded)) {
+            $return['url'] = $responseDecoded['url']
+                ? strval($responseDecoded['url'])
+                : null;
+        }
+
+        if (array_key_exists('access_policy', $responseDecoded)) {
+            $return['access_policy'] = $responseDecoded['access_policy'];
+        }
+
+        if (array_key_exists('ocr', $responseDecoded)) {
+            $return['ocr'] = $responseDecoded['ocr'];
         }
 
         return $return;
@@ -264,12 +272,11 @@ class GyazoClient
      * } $options
      * @return array{
      *     image_id: string,
-     *     permalink_url: string,
-     *     thumb_url: string,
-     *     url: string,
-     *     type: string,
-     *     url: string,
-     *     created_at?: string,
+     *     permalink_url?: string|null,
+     *     thumb_url?: string|null,
+     *     url?: string|null,
+     *     type?: string|null,
+     *     created_at?: string|null,
      *     access_policy?: mixed|null
      * }
      * @throws GyazoException
@@ -320,15 +327,46 @@ class GyazoClient
             throw new GyazoException();
         }
 
-        return [
-            'image_id' => strval($decodedResponse['image_id'] ?? null),
-            'permalink_url' => strval($decodedResponse['permalink_url'] ?? null),
-            'thumb_url' => strval($decodedResponse['thumb_url'] ?? null),
-            'url' => strval($decodedResponse['url'] ?? null),
-            'type' => $decodedResponse['type'] ?? null,
-            'access_policy' => $decodedResponse['access_policy'] ?? null,
-            'created_at' => strval($decodedResponse['created_at'] ?? null),
-        ];
+        $return = $decodedResponse;
+
+        $imageId = strval($decodedResponse['image_id'] ?? null);
+        $return['image_id'] = $imageId;
+
+        if (array_key_exists('permalink_url', $decodedResponse)) {
+            $return['permalink_url'] = $decodedResponse['permalink_url'] ?? null
+                ? strval($decodedResponse['permalink_url'])
+                : null;
+        }
+
+        if (array_key_exists('thumb_url', $decodedResponse)) {
+            $return['thumb_url'] = $decodedResponse['thumb_url'] ?? null
+                ? strval($decodedResponse['thumb_url'])
+                : null;
+        }
+
+        if (array_key_exists('url', $decodedResponse)) {
+            $return['url'] = $decodedResponse['url'] ?? null
+                ? strval($decodedResponse['url'])
+                : null;
+        }
+
+        if (array_key_exists('type', $decodedResponse)) {
+            $return['type'] = $decodedResponse['type'] ?? null
+                ? strval($decodedResponse['type'])
+                : null;
+        }
+
+        if (array_key_exists('created_at', $decodedResponse)) {
+            $return['created_at'] = $decodedResponse['created_at'] ?? null
+                ? strval($decodedResponse['created_at'])
+                : null;
+        }
+
+        if (array_key_exists('access_policy', $decodedResponse)) {
+            $return['access_policy'] = $decodedResponse['created_at'] ?? null;
+        }
+
+        return $return;
     }
 
     /**
@@ -376,6 +414,9 @@ class GyazoClient
     }
 
     /**
+     * Get oEmbed data
+     *
+     * @see https://gyazo.com/api/docs/image
      * @param string $url
      * @return array{
      *     version: string,
