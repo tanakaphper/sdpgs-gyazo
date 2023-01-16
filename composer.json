@@ -3,6 +3,8 @@
     "description": "simple gyazo client",
     "type": "library",
     "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Sdpgs\\Gyazo\\": "src/"
