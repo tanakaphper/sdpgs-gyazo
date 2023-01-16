@@ -53,7 +53,7 @@ composer test
 ## Contributing
 
 Thank you for considering to sdpgs-gyazo! But, The contribution guide doesn't get ready yet.
-If you would, please wait just a moment.
+If you would so, please wait just a moment.
 
 ## License
 
